@@ -18,7 +18,7 @@ commander.command("run").action(function() {
 
   var pool = mysql.createPool(commander.mysqlURL || {
     connectionLimit : 10,
-    host : commander.mysqlHost,
+    host : commander.mysqlHost || "localhost",
     port : commander.mysqlPort || 3306,
     user : commander.mysqlUser,
     password : commander.mysqlPassword,
