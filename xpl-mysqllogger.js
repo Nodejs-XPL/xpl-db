@@ -189,8 +189,9 @@ function saveSensorBasic(message, connection, callback) {
   var body = message.body;
 
   var deviceName = body.device;
+  var current = message.current;
 
-  if (!deviceName) {
+  if (!deviceName || current === undefined) {
     return callback();
   }
 
@@ -209,8 +210,6 @@ function saveSensorBasic(message, connection, callback) {
   } else {
     date = Date.UTC(date);
   }
-
-  var current = message.current;
 
   getTypeById(deviceName, deviceIds, "devices", connection, function(error,
       deviceId) {
