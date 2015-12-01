@@ -3,6 +3,7 @@ var commander = require('commander');
 var mysql = require('mysql');
 var os = require('os');
 var debug = require('debug')('xpl-mysqllogger');
+var async = require('async');
 
 commander.version(require("./package.json").version);
 commander.option("-h, --mysqlHost <host>", "Mysql host name");
@@ -15,6 +16,39 @@ commander.option("-a, --deviceAliases <aliases>", "Devices aliases");
 
 Xpl.fillCommander(commander);
 
+commander
+    .command("create")
+    .action(
+        function() {
+
+          var currentBool = "CREATE TABLE `currentBool` (`id` int(11) unsigned NOT NULL AUTO_INCREMENT, `device` int(10) unsigned NOT NULL, `current` bit(1) DEFAULT NULL, `date` timestamp NOT NULL, PRIMARY KEY (`id`), KEY `bydate` (`device`,`date`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+          var currentNumber = "CREATE TABLE `currentBool` (`id` int(11) unsigned NOT NULL AUTO_INCREMENT, `device` int(10) unsigned NOT NULL, `unit` int(4) unsigned DEFAULT NULL, `current` double DEFAULT NULL, `date` timestamp NOT NULL, PRIMARY KEY (`id`), KEY `bydate` (`device`,`date`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+          var currentString = "CREATE TABLE `currentBool` (`id` int(11) unsigned NOT NULL AUTO_INCREMENT, `device` int(10) unsigned NOT NULL, `unit` int(4) unsigned DEFAULT NULL, `current` varchar(256) DEFAULT NULL, `date` timestamp NOT NULL, PRIMARY KEY (`id`), KEY `bydate` (`device`,`date`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+
+          var devices = "CREATE TABLE `devices` ( `id` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(128) NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `byname` (`name`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+          var units = "CREATE TABLE `units` ( `id` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(128) NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `byname` (`name`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+
+          var connection = mysql.createConnection(commander.mysqlURL || {
+            host : commander.mysqlHost || "localhost",
+            port : commander.mysqlPort || 3306,
+            user : commander.mysqlUser,
+            password : commander.mysqlPassword,
+            database : commander.mysqlDatabase || "xpl"
+          });
+
+          async.eachSeries([ currentBool, currentNumber, currentString,
+              devices, units ], connection.query, function(error) {
+            if (error) {
+              console.error(error);
+              return;
+            }
+
+            connection.end(function() {
+              console.log("DONE !");
+            });
+          });
+        });
+
 commander.command("run").action(
     function() {
 
@@ -24,7 +58,7 @@ commander.command("run").action(
         port : commander.mysqlPort || 3306,
         user : commander.mysqlUser,
         password : commander.mysqlPassword,
-        database : commander.mysqlDatabase
+        database : commander.mysqlDatabase || "xpl"
       });
 
       try {
@@ -54,29 +88,7 @@ commander.command("run").action(
 
           console.log("Xpl bind succeed ");
 
-          if (false) {
-            pool.getConnection(function(error, connection) {
-              if (error) {
-                console.error('error connecting: ', error, error.stack);
-                return;
-              }
-
-              saveSensorBasic({
-                device : "sensors/maison",
-                type : "water",
-                current : "663",
-                units : "W"
-
-              }, connection, function(error) {
-                connection.release();
-
-                console.error(error);
-              });
-
-            });
-          }
-
-          xpl.on("xpl:xpl-trig", function(message) {
+          function processMessage(message) {
 
             if (message.bodyName === "sensor.basic") {
               pool.getConnection(function(error, connection) {
@@ -93,9 +105,11 @@ commander.command("run").action(
                   }
                 });
               });
+              return;
             }
-          });
-
+          }
+          xpl.on("xpl:xpl-trig", processMessage);
+          xpl.on("xpl:xpl-stat", processMessage);
         });
       } catch (x) {
         console.log(x);
@@ -111,6 +125,7 @@ function getTypeById(name, map, type, connection, callback) {
     return callback(null, id);
   }
 
+  debug("Execute QUERY from ", type);
   connection.query({
     sql : 'SELECT id FROM ?? WHERE name=?',
     timeout : 1000 * 20,
@@ -127,6 +142,8 @@ function getTypeById(name, map, type, connection, callback) {
 
       return callback(null, id);
     }
+
+    debug("Execute INSERT into ", type);
 
     connection.query({
       sql : "INSERT INTO ?? SET ?",
