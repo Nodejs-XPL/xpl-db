@@ -11,91 +11,96 @@ commander.option("-u --mysqlUser <user>", "Mysql user name");
 commander.option("-p --mysqlPassword <password>", "Mysql password");
 commander.option("-d --mysqlDatabase <database>", "Mysql database");
 commander.option("--mysqlURL <url>", "Mysql url");
+commander.option("-a, --deviceAliases <aliases>", "Devices aliases");
 
 Xpl.fillCommander(commander);
 
-commander.command("run").action(function() {
+commander.command("run").action(
+    function() {
 
-  var pool = mysql.createPool(commander.mysqlURL || {
-    connectionLimit : 10,
-    host : commander.mysqlHost || "localhost",
-    port : commander.mysqlPort || 3306,
-    user : commander.mysqlUser,
-    password : commander.mysqlPassword,
-    database : commander.mysqlDatabase
-  });
+      var pool = mysql.createPool(commander.mysqlURL || {
+        connectionLimit : 10,
+        host : commander.mysqlHost || "localhost",
+        port : commander.mysqlPort || 3306,
+        user : commander.mysqlUser,
+        password : commander.mysqlPassword,
+        database : commander.mysqlDatabase
+      });
 
-  try {
-    if (!commander.xplSource) {
-      var hostName = os.hostname();
-      if (hostName.indexOf('.') > 0) {
-        hostName = hostName.substring(0, hostName.indexOf('.'));
-      }
+      try {
+        if (!commander.xplSource) {
+          var hostName = os.hostname();
+          if (hostName.indexOf('.') > 0) {
+            hostName = hostName.substring(0, hostName.indexOf('.'));
+          }
 
-      commander.xplSource = "mysqllogger." + hostName;
-    }
+          commander.xplSource = "mysqllogger." + hostName;
+        }
 
-    var xpl = new Xpl(commander);
+        var xpl = new Xpl(commander);
 
-    xpl.on("error", function(error) {
-      console.log("XPL error", error);
-    });
+        var deviceAliases = Xpl.loadDeviceAliases(commander.deviceAliases);
 
-    xpl.bind(function(error) {
-      if (error) {
-        console.log("Can not open xpl bridge ", error);
-        process.exit(2);
-        return;
-      }
+        xpl.on("error", function(error) {
+          console.log("XPL error", error);
+        });
 
-      console.log("Xpl bind succeed ");
-
-      if (false) {
-        pool.getConnection(function(error, connection) {
+        xpl.bind(function(error) {
           if (error) {
-            console.error('error connecting: ', error, error.stack);
+            console.log("Can not open xpl bridge ", error);
+            process.exit(2);
             return;
           }
 
-          saveSensorBasic({
-            device : "sensors/maison",
-            type : "water",
-            current : "663",
-            units : "W"
+          console.log("Xpl bind succeed ");
 
-          }, connection, function(error) {
-            connection.release();
+          if (false) {
+            pool.getConnection(function(error, connection) {
+              if (error) {
+                console.error('error connecting: ', error, error.stack);
+                return;
+              }
 
-            console.error(error);
+              saveSensorBasic({
+                device : "sensors/maison",
+                type : "water",
+                current : "663",
+                units : "W"
+
+              }, connection, function(error) {
+                connection.release();
+
+                console.error(error);
+              });
+
+            });
+          }
+
+          xpl.on("xpl:xpl-trig", function(message) {
+
+            if (message.bodyName === "sensor.basic") {
+              pool.getConnection(function(error, connection) {
+                if (error) {
+                  console.error('error connecting: ', error, error.stack);
+                  return;
+                }
+                saveSensorBasic(message, connection, deviceAliases, function(
+                    error) {
+                  connection.release();
+
+                  if (error) {
+                    console.error(error);
+                  }
+                });
+              });
+            }
           });
 
         });
+      } catch (x) {
+        console.log(x);
       }
-
-      xpl.on("xpl:xpl-trig", function(message) {
-
-        if (message.bodyName === "sensor.basic") {
-          pool.getConnection(function(error, connection) {
-            if (error) {
-              console.error('error connecting: ', error, error.stack);
-              return;
-            }
-            saveSensorBasic(message, connection, function(error) {
-              connection.release();
-
-              if (error) {
-                console.error(error);
-              }
-            });
-          });
-        }
-      });
-
     });
-  } catch (x) {
-    console.log(x);
-  }
-});
 
 var deviceIds = {};
 var unitIds = {};
@@ -184,12 +189,16 @@ function insertCurrent(deviceId, unitId, current, date, connection, callback) {
   }, callback);
 }
 
-function saveSensorBasic(message, connection, callback) {
+function saveSensorBasic(message, connection, deviceAliases, callback) {
   debug("Save sensor.basic", message);
   var body = message.body;
 
   var deviceName = body.device;
   var current = body.current;
+
+  if (deviceAliases && deviceAliases[deviceName]) {
+    deviceName = deviceAliases[deviceName];
+  }
 
   if (!deviceName || current === undefined) {
     return callback();
