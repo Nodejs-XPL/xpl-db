@@ -133,8 +133,7 @@ function getTypeById(name, map, type, connection, callback) {
 
   }, function(error, results, fields) {
 
-    debug("getDeviceId.select: error=", error, " Results=", results, "fields=",
-        fields);
+    debug("getDeviceId.select: error=", error, "results=", results);
 
     if (results.length === 1) {
       var id = results[0].id;
@@ -234,7 +233,7 @@ function saveSensorBasic(message, connection, deviceAliases, callback) {
     date = new Date(parseInt(date));
 
   } else {
-    date = Date.UTC(date);
+    date = new Date(date);
   }
 
   getTypeById(deviceName, deviceIds, "devices", connection, function(error,
