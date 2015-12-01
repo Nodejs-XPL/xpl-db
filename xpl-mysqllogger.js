@@ -185,7 +185,13 @@ function insertCurrent(deviceId, unitId, current, date, connection, callback) {
 }
 
 function saveSensorBasic(message, connection, callback) {
+  debug("Save sensor.basic", message);
   var deviceName = message.device;
+
+  if (!deviceName) {
+    return callback();
+  }
+
   if (message.type) {
     deviceName += "@" + message.type;
   }
