@@ -1,7 +1,7 @@
 {
-  "name": "xpl-mysql-logger",
-  "version": "1.0.0",
-  "description": "XPL logger in mysql dabase",
+  "name": "xpl-db",
+  "version": "0.0.1",
+  "description": "Store xpl-stats and xpl-trigs in database",
   "bin": "./xpl-mysql-logger.js",
   "dependencies": {
 	  "xpl-api": ">=1.0.10",
