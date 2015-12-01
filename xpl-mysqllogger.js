@@ -189,7 +189,7 @@ function saveSensorBasic(message, connection, callback) {
   var body = message.body;
 
   var deviceName = body.device;
-  var current = message.current;
+  var current = body.current;
 
   if (!deviceName || current === undefined) {
     return callback();
