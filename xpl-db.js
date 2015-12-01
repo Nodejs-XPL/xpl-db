@@ -5,7 +5,7 @@ var Xpl = require("xpl-api");
 var commander = require('commander');
 var os = require('os');
 var debug = require('debug')('xpl-db');
-var Mysql = require('./mysql');
+var Mysql = require('./lib/mysql');
 
 commander.version(require("./package.json").version);
 commander.option("-a, --deviceAliases <aliases>", "Devices aliases");
