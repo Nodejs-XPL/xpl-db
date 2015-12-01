@@ -1,0 +1,20 @@
+{
+  "name": "xpl-mysql-logger",
+  "version": "1.0.0",
+  "description": "XPL logger in mysql dabase",
+  "bin": "./xpl-mysql-logger.js",
+  "dependencies": {
+	  "xpl-api": ">=1.0.10",
+	  "commander": "latest",
+	  "mysql": "latest",
+	  "debug": "latest"
+  },
+  "keywords": [
+    "XPL",
+    "mysql"
+  ],
+  "repository": { "type": "git", "url": "https://github.com/oeuillot/xpl-mysql-logger.git" },
+  "author": "Olivier Oeuillot",
+  "license": "GPL",
+  "readmeFilename": "README.md"
+}
