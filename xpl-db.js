@@ -40,7 +40,7 @@ commander.command("rest").action(() => {
   });
 });
 
-commander.command("db").action(() => {
+commander.command("store").action(() => {
 
   var deviceAliases = Xpl.loadDeviceAliases(commander.deviceAliases);
 
