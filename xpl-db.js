@@ -6,16 +6,18 @@ var commander = require('commander');
 var os = require('os');
 var debug = require('debug')('xpl-db');
 var Mysql = require('./lib/mysql');
+var Server = require('./lib/server');
 
 commander.version(require("./package.json").version);
 commander.option("-a, --deviceAliases <aliases>", "Devices aliases");
+commander.option("--httpPort <port>", "REST server port", parseInt);
 
 Mysql.fillCommander(commander);
 Xpl.fillCommander(commander);
 
 var Store = Mysql;
 
-commander.command("create").action(function() {
+commander.command("create").action(() => {
 
   var store = new Store(commander);
 
@@ -27,13 +29,13 @@ commander.command("create").action(function() {
   });
 });
 
-commander.command("run").action(function() {
+commander.command("run").action(() => {
 
   var deviceAliases = Xpl.loadDeviceAliases(commander.deviceAliases);
 
   var store = new Store(commander, deviceAliases);
 
-  store.connect(function(error) {
+  store.connect((error) => {
     if (error) {
       console.error(error);
       return;
@@ -50,23 +52,33 @@ commander.command("run").action(function() {
 
       var xpl = new Xpl(commander);
 
-      xpl.on("error", function(error) {
-        console.log("XPL error", error);
+      xpl.on("error", (error) => {
+        console.error("XPL error", error);
       });
 
-      xpl.bind(function(error) {
+      xpl.bind((error) => {
         if (error) {
-          console.log("Can not open xpl bridge ", error);
+          console.error("Can not open xpl bridge ", error);
           process.exit(2);
           return;
         }
 
         console.log("Xpl bind succeed ");
 
-        function processMessage(message) {
+        if (commander.httpPort) {
+          var server = new Server(commander, store);
+
+          server.listen((error) => {
+            if (error) {
+              console.error(error);
+            }
+          });
+        }
+
+        var processMessage = (message) => {
 
           if (message.bodyName === "sensor.basic") {
-            store.save(message, function(error) {
+            store.save(message, (error) => {
               if (error) {
                 console.error('error connecting: ', error, error.stack);
                 return;
@@ -77,6 +89,11 @@ commander.command("run").action(function() {
         }
         xpl.on("xpl:xpl-trig", processMessage);
         xpl.on("xpl:xpl-stat", processMessage);
+
+        xpl.on("message", function(message, packet, address) {
+
+        });
+
       });
     } catch (x) {
       console.error(x);

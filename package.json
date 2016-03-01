@@ -7,7 +7,12 @@
 	  "xpl-api": ">=1.0.10",
 	  "commander": "latest",
 	  "mysql": "latest",
-	  "debug": "latest"
+	  "debug": "latest",
+	  "express": "latest",
+	  "async":"latest",
+	  "connect-nocache": "latest",
+	  "body-parser": "latest",
+	  "compression": "latest"
   },
   "keywords": [
     "XPL",
