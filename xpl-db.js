@@ -29,7 +29,18 @@ commander.command("create").action(() => {
   });
 });
 
-commander.command("run").action(() => {
+
+commander.command("rest").action(() => {
+  var server = new Server(commander, store);
+
+  server.listen((error) => {
+    if (error) {
+      console.error(error);
+    }
+  });
+});
+
+commander.command("db").action(() => {
 
   var deviceAliases = Xpl.loadDeviceAliases(commander.deviceAliases);
 
@@ -64,16 +75,6 @@ commander.command("run").action(() => {
         }
 
         console.log("Xpl bind succeed ");
-
-        if (commander.httpPort) {
-          var server = new Server(commander, store);
-
-          server.listen((error) => {
-            if (error) {
-              console.error(error);
-            }
-          });
-        }
 
         var processMessage = (message) => {
 
