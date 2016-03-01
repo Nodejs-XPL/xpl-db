@@ -35,13 +35,19 @@ commander.command("rest").action(() => {
   var deviceAliases = Xpl.loadDeviceAliases(commander.deviceAliases);
 
   var store = new Store(commander, deviceAliases);
-
-  var server = new Server(commander, store);
-
-  server.listen((error) => {
+  store.connect((error) => {
     if (error) {
       console.error(error);
+      return;
     }
+  
+    var server = new Server(commander, store);
+  
+    server.listen((error) => {
+      if (error) {
+        console.error(error);
+      }
+    });
   });
 });
 
