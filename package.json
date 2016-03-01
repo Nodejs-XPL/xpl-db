@@ -1,24 +1,27 @@
 {
   "name": "xpl-db",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Store xpl-stats and xpl-trigs in database",
-  "bin": "./xpl-mysql-logger.js",
   "dependencies": {
-	  "xpl-api": ">=1.0.10",
-	  "commander": "latest",
-	  "mysql": "latest",
-	  "debug": "latest",
-	  "express": "latest",
-	  "async":"latest",
-	  "connect-nocache": "latest",
-	  "body-parser": "latest",
-	  "compression": "latest"
+    "async": "^1.5.2",
+    "body-parser": "^1.15.0",
+    "commander": "^2.9.0",
+    "compression": "^1.6.1",
+    "connect-nocache": "latest",
+    "debug": "^2.2.0",
+    "express": "^4.13.4",
+    "mysql": "^2.10.2",
+    "serve-static": "^1.10.2",
+    "xpl-api": "^2.0.0"
   },
   "keywords": [
     "XPL",
     "mysql"
   ],
-  "repository": { "type": "git", "url": "https://github.com/oeuillot/xpl-mysql-logger.git" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oeuillot/xpl-db.git"
+  },
   "author": "Olivier Oeuillot",
   "license": "GPL",
   "readmeFilename": "README.md"
