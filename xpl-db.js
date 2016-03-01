@@ -11,6 +11,7 @@ var Server = require('./lib/server');
 commander.version(require("./package.json").version);
 commander.option("-a, --deviceAliases <aliases>", "Devices aliases");
 commander.option("--httpPort <port>", "REST server port", parseInt);
+commander.option("--configPath <path>", "Static config files of http server");
 
 Mysql.fillCommander(commander);
 Xpl.fillCommander(commander);
