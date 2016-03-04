@@ -72,8 +72,7 @@ commander.command("rest").action(() => {
       }
       
       f(xpl);
-    }
-    
+    });    
   });
 });
 
