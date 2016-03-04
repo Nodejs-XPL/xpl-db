@@ -12,6 +12,7 @@ commander.version(require("./package.json").version);
 commander.option("-a, --deviceAliases <aliases>", "Devices aliases");
 commander.option("--httpPort <port>", "REST server port", parseInt);
 commander.option("--configPath <path>", "Static config files of http server");
+commander.option("--xplCommand", "Enable xpl commands by Http command");
 
 Mysql.fillCommander(commander);
 Xpl.fillCommander(commander);
@@ -41,14 +42,38 @@ commander.command("rest").action(() => {
       console.error(error);
       return;
     }
-  
-    var server = new Server(commander, store);
-  
-    server.listen((error) => {
-      if (error) {
-        console.error(error);
-      }
+    
+    var f = (xpl) => {
+      var server = new Server(commander, store, xpl);
+    
+      server.listen((error) => {
+        if (error) {
+          console.error(error);
+        }
+      });
+    }
+    
+    if (!commander.xplCommand) {
+      f(null);
+      return;
+    }
+    
+    var xpl = new Xpl(commander);
+
+    xpl.on("error", (error) => {
+      console.error("XPL error", error);
     });
+
+    xpl.bind((error) => {
+      if (error) {
+        console.error("Can not open xpl bridge ", error);
+        process.exit(2);
+        return;
+      }
+      
+      f(xpl);
+    }
+    
   });
 });
 
