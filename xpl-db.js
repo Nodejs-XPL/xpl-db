@@ -51,7 +51,7 @@ commander.command("rest").action(() => {
           console.error(error);
         }
       });
-    }
+    };
     
     if (!commander.xplCommand) {
       f(null);
