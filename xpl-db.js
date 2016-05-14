@@ -13,6 +13,7 @@ commander.option("-a, --deviceAliases <aliases>", "Devices aliases");
 commander.option("--httpPort <port>", "REST server port", parseInt);
 commander.option("--configPath <path>", "Static config files of http server");
 commander.option("--xplCommand", "Enable xpl commands by Http command");
+commander.option("--memcached", "Store xpl current in memcache");
 
 Mysql.fillCommander(commander);
 Xpl.fillCommander(commander);
@@ -123,13 +124,16 @@ commander.command("store").action(() => {
             });
             return;
           }
-        }
+        };
+        
         xpl.on("xpl:xpl-trig", processMessage);
         xpl.on("xpl:xpl-stat", processMessage);
 
-        xpl.on("message", function(message, packet, address) {
+        /*
+        xpl.on("message", (message, packet, address) => {
 
         });
+        */
 
       });
     } catch (x) {
