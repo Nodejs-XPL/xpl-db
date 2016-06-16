@@ -7,10 +7,12 @@ const os = require('os');
 const debug = require('debug')('xpl-db');
 const Mysql = require('./lib/mysql');
 const Server = require('./lib/server');
-const Memcache = require('./lib/memcache');
 const Async = require('async');
 const ip = require('ip');
-const API = require('./lib/API');
+
+const XplDBClient = require('xpl-dbclient');
+const Memcache = XplDBClient.Memcache;
+const Query = XplDBClient.Query;
 
 commander.version(require("./package.json").version);
 commander.option("-a, --deviceAliases <aliases>", "Devices aliases");
@@ -233,7 +235,7 @@ commander.command("store").action(() => {
 });
 
 commander.command("request").action((path) => {
-  var query=new API.Query(commander);
+  var query=new Query(commander);
   
   query.getValue(path, (error, value) => {
     if (error) {
