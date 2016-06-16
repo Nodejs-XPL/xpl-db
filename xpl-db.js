@@ -46,13 +46,12 @@ commander.command("rest").action(() => {
   var store;
   var memcache;
  
-  if (commander.db) {
+  if (commander.store) {
     initCbs.push((callback) => {
       store = new Store(commander, deviceAliases);
 
       store.connect(callback);
     });
-    return;
   }
 
   if (commander.memcached) {
