@@ -58,7 +58,13 @@ commander.command("rest").action(() => {
     initCbs.push((callback) => {
       memcache = new Memcache(commander, deviceAliases);
 
-      memcache.initialize(callback);
+      memcache.initialize((error) => {
+        if (error) {
+          return callback(error);
+        }
+        
+        callback();
+      });
     });
   }
 
@@ -74,6 +80,14 @@ commander.command("rest").action(() => {
       server.listen((error, server) => {
         if (error) {
           console.error(error);
+        }
+
+        if (memcache && store) {
+          process.on('beforeExit', () => {
+            memcache.saveRestServerURL('', (error) => {
+              debug("xpl-db", "Reset rest server URL into memcache !");
+            });
+          });
         }
         
         var url="http://"+ ip.address() + ":"+ server.address().port;
