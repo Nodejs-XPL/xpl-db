@@ -242,6 +242,8 @@ commander.command("request").action((path) => {
     }
     
     console.log(value);
+    
+    query.close();
   });
   
 });
