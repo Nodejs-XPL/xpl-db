@@ -18,7 +18,7 @@ commander.option("--httpPort <port>", "REST server port", parseInt);
 commander.option("--configPath <path>", "Static config files of http server");
 commander.option("--xplCommand", "Enable xpl commands by Http command");
 commander.option("--memcached", "Store xpl values in memcache");
-commander.option("--store", "Store xpl values in a DB");
+commander.option("--db", "Store xpl values in a DB");
 
 Mysql.fillCommander(commander);
 Xpl.fillCommander(commander);
@@ -46,7 +46,7 @@ commander.command("rest").action(() => {
   var store;
   var memcache;
  
-  if (commander.store) {
+  if (commander.db) {
     initCbs.push((callback) => {
       store = new Store(commander, deviceAliases);
 
@@ -117,7 +117,7 @@ commander.command("store").action(() => {
   var memcache;
   var initCbs=[];
   
-  if (commander.store) {
+  if (commander.db) {
     initCbs.push((callback) => {
       store = new Store(commander, deviceAliases);
 
