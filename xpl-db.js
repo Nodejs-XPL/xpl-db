@@ -72,7 +72,7 @@ commander.command("rest").action(() => {
     var f = (xpl) => {
       var server = new Server(commander, store, xpl, memcache);
     
-      server.listen((error) => {
+      server.listen((error, server) => {
         if (error) {
           console.error(error);
         }
