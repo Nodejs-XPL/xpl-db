@@ -77,7 +77,7 @@ commander.command("rest").action(() => {
           console.error(error);
         }
         
-        var url="http://"+ ip.address() + server.address().port;
+        var url="http://"+ ip.address() + server.address.port;
         debug("xpl-db", "Set rest server url to",url);
         memcache.saveRestServerURL(url, (error) => {
           if (error) {
