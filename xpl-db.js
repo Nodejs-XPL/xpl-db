@@ -77,8 +77,11 @@ commander.command("rest").action(() => {
           console.error(error);
         }
         
-        var url="http://"+ ip.address() + server.address().port;
+        var url="http://"+ ip.address() + ":"+ server.address().port;
         debug("xpl-db", "Set rest server url to",url);
+        if (!memcache) {
+          return;
+        }
         memcache.saveRestServerURL(url, (error) => {
           if (error) {
             console.error(error);
@@ -204,10 +207,10 @@ commander.command("store").action(() => {
         xpl.on("xpl:xpl-stat", processMessage);
 
         /*
-        xpl.on("message", (message, packet, address) => {
-
-        });
-        */
+         * xpl.on("message", (message, packet, address) => {
+         * 
+         * });
+         */
 
       });
     } catch (x) {
