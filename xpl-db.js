@@ -1,22 +1,28 @@
-/*jslint node: true, vars: true, nomen: true */
+/*jslint node: true, vars: true, nomen: true, esversion: 6 */
 'use strict';
 
-var Xpl = require("xpl-api");
-var commander = require('commander');
-var os = require('os');
-var debug = require('debug')('xpl-db');
-var Mysql = require('./lib/mysql');
-var Server = require('./lib/server');
+const Xpl = require("xpl-api");
+const commander = require('commander');
+const os = require('os');
+const debug = require('debug')('xpl-db');
+const Mysql = require('./lib/mysql');
+const Server = require('./lib/server');
+const Memcache = require('./lib/memcache');
+const Async = require('async');
+const ip = require('ip');
+const API = require('./lib/API');
 
 commander.version(require("./package.json").version);
 commander.option("-a, --deviceAliases <aliases>", "Devices aliases");
 commander.option("--httpPort <port>", "REST server port", parseInt);
 commander.option("--configPath <path>", "Static config files of http server");
 commander.option("--xplCommand", "Enable xpl commands by Http command");
-commander.option("--memcached", "Store xpl current in memcache");
+commander.option("--memcached", "Store xpl in memcache");
+commander.option("--db", "Store xpl in DB");
 
 Mysql.fillCommander(commander);
 Xpl.fillCommander(commander);
+Memcache.fillCommander(commander);
 
 var Store = Mysql;
 
@@ -36,9 +42,28 @@ commander.command("create").action(() => {
 commander.command("rest").action(() => {
 
   var deviceAliases = Xpl.loadDeviceAliases(commander.deviceAliases);
+  var initCbs=[];
+  var store;
+  var memcache;
+ 
+  if (commander.db) {
+    initCbs.push((callback) => {
+      store = new Store(commander, deviceAliases);
 
-  var store = new Store(commander, deviceAliases);
-  store.connect((error) => {
+      store.connect(callback);
+    });
+    return;
+  }
+
+  if (commander.memcached) {
+    initCbs.push((callback) => {
+      memcache = new Memcache(commander, deviceAliases);
+
+      memcache.initialize(callback);
+    });
+  }
+
+  Async.parallel(initCbs, (error) => {
     if (error) {
       console.error(error);
       return;
@@ -51,13 +76,16 @@ commander.command("rest").action(() => {
         if (error) {
           console.error(error);
         }
+        
+        var url="http://"+ ip.address() + server.address().port;
+        debug("xpl-db", "Set rest server url to",url);
+        memcache.saveRestServerURL(url, (error) => {
+          if (error) {
+            console.error(error);
+          }
+        });
       });
     };
-    
-    if (!commander.xplCommand) {
-      f(null);
-      return;
-    }
     
     var xpl = new Xpl(commander);
 
@@ -80,14 +108,54 @@ commander.command("rest").action(() => {
 commander.command("store").action(() => {
 
   var deviceAliases = Xpl.loadDeviceAliases(commander.deviceAliases);
+  
+  debug("store", "Store starting ... deviceAliases=",deviceAliases);
 
-  var store = new Store(commander, deviceAliases);
+  var store;
+  var memcache;
+  var initCbs=[];
+  
+  if (commander.db) {
+    initCbs.push((callback) => {
+      store = new Store(commander, deviceAliases);
 
-  store.connect((error) => {
+      store.connect((error) => {
+        if (error) {
+          debug("store", "Store error=",error);
+          return callback(error);
+        }
+        
+        debug("store", "Store connected");
+        
+        callback();
+      });
+    });
+  }
+  if (commander.memcached) {
+    initCbs.push((callback) => {
+      memcache = new Memcache(commander, deviceAliases);
+
+      memcache.initialize((error) => {
+        if (error) {
+          debug("store", "Memcached error=",error);
+          return callback(error);
+        }
+        
+        debug("store", "Memcached connected");
+        
+        callback();
+      });
+    });
+  }
+  
+  Async.parallel(initCbs, (error) => {
     if (error) {
+      debug("store", "Initialization error=",error);
       console.error(error);
       return;
     }
+    debug("store", "Initialization OK");
+    
     try {
       if (!commander.xplSource) {
         var hostName = os.hostname();
@@ -111,17 +179,23 @@ commander.command("store").action(() => {
           return;
         }
 
-        console.log("Xpl bind succeed ");
+        debug("store", "Xpl bind succeed ");
 
         var processMessage = (message) => {
 
           if (message.bodyName === "sensor.basic") {
-            store.save(message, (error) => {
-              if (error) {
-                console.error('error connecting: ', error, error.stack);
-                return;
-              }
-            });
+            if (store) {
+              store.save(message, (error) => {
+                if (error) {
+                  console.error('error connecting: ', error, error.stack);
+                  return;
+                }
+              });
+            }
+            if (memcache) {
+              memcache.saveMessage(message);
+            }
+            
             return;
           }
         };
@@ -140,6 +214,20 @@ commander.command("store").action(() => {
       console.error(x);
     }
   });
+});
+
+commander.command("request").action((path) => {
+  var query=new API.Query(commander);
+  
+  query.getValue(path, (error, value) => {
+    if (error) {
+      console.error(error);
+      return;
+    }
+    
+    console.log(value);
+  });
+  
 });
 
 commander.parse(process.argv);
