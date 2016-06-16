@@ -83,7 +83,7 @@ commander.command("rest").action(() => {
         }
 
         if (memcache && store) {
-          process.on('beforeExit', () => {
+          process.on('exit', () => {
             memcache.saveRestServerURL('', (error) => {
               debug("xpl-db", "Reset rest server URL into memcache !");
             });
