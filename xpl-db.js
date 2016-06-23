@@ -25,6 +25,7 @@ commander.option("--db", "Store xpl values in a DB");
 Mysql.fillCommander(commander);
 Xpl.fillCommander(commander);
 Memcache.fillCommander(commander);
+Query.fillCommander(commander);
 
 var Store = Mysql;
 
@@ -232,22 +233,6 @@ commander.command("store").action(() => {
       console.error(x);
     }
   });
-});
-
-commander.command("request").action((path) => {
-  var query=new Query(commander);
-  
-  query.getValue(path, (error, value) => {
-    if (error) {
-      console.error(error);
-      return;
-    }
-    
-    console.log(value);
-    
-    query.close();
-  });
-  
 });
 
 commander.parse(process.argv);
