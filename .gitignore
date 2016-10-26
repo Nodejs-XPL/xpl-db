@@ -26,3 +26,5 @@ node_modules
 /.project
 /.settings/
 /.tern-project
+/xpl-db.iml
+/xpl-mysql-logger.iml

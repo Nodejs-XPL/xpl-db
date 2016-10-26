@@ -6,6 +6,7 @@ const commander = require('commander');
 const os = require('os');
 const debug = require('debug')('xpl-db');
 const Mysql = require('./lib/mysql');
+const Mongo = require('./lib/mongo');
 const Server = require('./lib/server');
 const Async = require('async');
 const ip = require('ip');
@@ -21,15 +22,16 @@ commander.option("--configPath <path>", "Static config files of http server");
 commander.option("--xplCommand", "Enable xpl commands by Http command");
 commander.option("--memcached", "Store xpl values in memcache");
 commander.option("--db", "Store xpl values in a DB");
+commander.option("--storeType", "DB type");
 
 Mysql.fillCommander(commander);
 Xpl.fillCommander(commander);
 Memcache.fillCommander(commander);
 Query.fillCommander(commander);
 
-var Store = Mysql;
-
 commander.command("create").action(() => {
+
+	let Store = computeStore(commander);
 
 	var store = new Store(commander);
 
@@ -43,6 +45,8 @@ commander.command("create").action(() => {
 
 
 commander.command("rest").action(() => {
+
+	let Store = computeStore(commander);
 
 	var deviceAliases = Xpl.loadDeviceAliases(commander.deviceAliases);
 	var initCbs = [];
@@ -126,6 +130,8 @@ commander.command("rest").action(() => {
 
 commander.command("store").action(() => {
 
+	let Store = computeStore(commander);
+
 	var deviceAliases = Xpl.loadDeviceAliases(commander.deviceAliases);
 
 	debug("store", "Store starting ... deviceAliases=", deviceAliases);
@@ -202,7 +208,7 @@ commander.command("store").action(() => {
 
 				var processMessage = (message) => {
 
-					if (message.bodyName === "sensor.basic") {
+					//if (message.bodyName === "sensor.basic") {
 						if (store) {
 							store.save(message, (error) => {
 								if (error) {
@@ -216,7 +222,7 @@ commander.command("store").action(() => {
 						}
 
 						return;
-					}
+					//}
 				};
 
 				xpl.on("xpl:xpl-trig", processMessage);
@@ -236,3 +242,16 @@ commander.command("store").action(() => {
 });
 
 commander.parse(process.argv);
+
+function getStore(commander) {
+	switch (commander.storeType || "mysql") {
+		case "mysql":
+			return Mysql;
+
+		case "Mongo":
+			return Mongo;
+	}
+
+	console.error("Invalid store type '" + commander.storeType + "'");
+	process.exit(2);
+}
