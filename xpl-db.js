@@ -31,7 +31,7 @@ Query.fillCommander(commander);
 
 commander.command("create").action(() => {
 
-	let Store = computeStore(commander);
+	let Store = getStore(commander);
 
 	var store = new Store(commander);
 
@@ -46,7 +46,7 @@ commander.command("create").action(() => {
 
 commander.command("rest").action(() => {
 
-	let Store = computeStore(commander);
+	let Store = getStore(commander);
 
 	var deviceAliases = Xpl.loadDeviceAliases(commander.deviceAliases);
 	var initCbs = [];
@@ -130,7 +130,7 @@ commander.command("rest").action(() => {
 
 commander.command("store").action(() => {
 
-	let Store = computeStore(commander);
+	let Store = getStore(commander);
 
 	var deviceAliases = Xpl.loadDeviceAliases(commander.deviceAliases);
 
