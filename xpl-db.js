@@ -25,6 +25,7 @@ commander.option("--db", "Store xpl values in a DB");
 commander.option("--storeType", "DB type");
 
 Mysql.fillCommander(commander);
+Mongo.fillCommander(commander);
 Xpl.fillCommander(commander);
 Memcache.fillCommander(commander);
 Query.fillCommander(commander);
@@ -248,7 +249,7 @@ function getStore(commander) {
 		case "mysql":
 			return Mysql;
 
-		case "Mongo":
+		case "mongo":
 			return Mongo;
 	}
 
