@@ -22,7 +22,7 @@ commander.option("--configPath <path>", "Static config files of http server");
 commander.option("--xplCommand", "Enable xpl commands by Http command");
 commander.option("--memcached", "Store xpl values in memcache");
 commander.option("--db", "Store xpl values in a DB");
-commander.option("--storeType", "DB type");
+commander.option("--storeType <type>", "DB type");
 
 Mysql.fillCommander(commander);
 Mongo.fillCommander(commander);
@@ -240,6 +240,11 @@ commander.command("store").action(() => {
 			console.error(x);
 		}
 	});
+});
+
+commander.command("*").action(() => {
+	console.error("Unknown command",arguments);
+	process.exit(1);
 });
 
 commander.parse(process.argv);
