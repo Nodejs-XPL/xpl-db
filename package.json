@@ -1,6 +1,6 @@
 {
   "name": "xpl-db",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Store xpl-stats and xpl-trigs in database",
   "dependencies": {
     "async": "^2.1.2",
