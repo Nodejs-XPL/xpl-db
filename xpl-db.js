@@ -207,34 +207,19 @@ commander.command("store").action(() => {
 
 				debug("store", "Xpl bind succeed ");
 
-				var processMessage = (message) => {
-
-					//if (message.bodyName === "sensor.basic") {
-						if (store) {
-							store.save(message, (error) => {
-								if (error) {
-									console.error('error connecting: ', error, error.stack);
-									return;
-								}
-							});
-						}
-						if (memcache) {
-							memcache.saveMessage(message);
-						}
-
-						return;
-					//}
-				};
-
-				xpl.on("xpl:xpl-trig", processMessage);
-				xpl.on("xpl:xpl-stat", processMessage);
-
-				/*
-				 * xpl.on("message", (message, packet, address) => {
-				 *
-				 * });
-				 */
-
+				xpl.on("message", (message) => {
+					if (store) {
+						store.save(message, (error) => {
+							if (error) {
+								console.error('error connecting: ', error, error.stack);
+								return;
+							}
+						});
+					}
+					if (memcache) {
+						memcache.saveMessage(message);
+					}
+				});
 			});
 		} catch (x) {
 			console.error(x);
@@ -243,7 +228,7 @@ commander.command("store").action(() => {
 });
 
 commander.command("*").action(() => {
-	console.error("Unknown command",arguments);
+	console.error("Unknown command", arguments);
 	process.exit(1);
 });
 
