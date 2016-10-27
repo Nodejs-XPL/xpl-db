@@ -96,6 +96,8 @@ commander.command("rest").action(() => {
 				}
 
 				process.on('exit', () => {
+					debug("xpl-db", "Clearing rest server URL ...");
+					
 					memcache.saveRestServerURL('', (error) => {
 						debug("xpl-db", "Reset rest server URL into memcache !");
 					});
@@ -103,11 +105,16 @@ commander.command("rest").action(() => {
 
 				var url = "http://" + ip.address() + ":" + server.address().port;
 				debug("xpl-db", "Set rest server url to", url);
-				memcache.saveRestServerURL(url, (error) => {
-					if (error) {
-						console.error(error);
-					}
-				});
+
+				var intervalId = setInterval(() => {
+					memcache.saveRestServerURL(url, (error) => {
+						if (error) {
+							console.error(error);
+
+							clearInterval(intervalId);
+						}
+					});
+				}, 1000 * 55);
 			});
 		};
 
