@@ -88,21 +88,21 @@ commander.command("rest").action(() => {
 			server.listen((error, server) => {
 				if (error) {
 					console.error(error);
+					return;
 				}
 
-				if (memcache && store) {
-					process.on('exit', () => {
-						memcache.saveRestServerURL('', (error) => {
-							debug("xpl-db", "Reset rest server URL into memcache !");
-						});
-					});
+				if (!memcache || !store) {
+					return;
 				}
+
+				process.on('exit', () => {
+					memcache.saveRestServerURL('', (error) => {
+						debug("xpl-db", "Reset rest server URL into memcache !");
+					});
+				});
 
 				var url = "http://" + ip.address() + ":" + server.address().port;
 				debug("xpl-db", "Set rest server url to", url);
-				if (!memcache) {
-					return;
-				}
 				memcache.saveRestServerURL(url, (error) => {
 					if (error) {
 						console.error(error);
