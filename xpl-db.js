@@ -7,7 +7,7 @@ const os = require('os');
 const debug = require('debug')('xpl-db');
 const Mysql = require('./lib/mysql');
 const Mongo = require('./lib/mongo');
-const Server = require('./lib/server.jsm');
+const Server = require('./lib/server');
 const Async = require('async');
 const ip = require('ip');
 
