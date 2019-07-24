@@ -7,7 +7,7 @@ const os = require('os');
 const debug = require('debug')('xpl-db');
 const Mysql = require('./lib/mysql');
 const Mongo = require('./lib/mongo');
-const Server = require('./lib/server');
+const Server = require('./lib/server.jsm');
 const Async = require('async');
 const ip = require('ip');
 
@@ -23,6 +23,7 @@ commander.option("--xplCommand", "Enable xpl commands by Http command");
 commander.option("--memcached", "Store xpl values in memcache");
 commander.option("--db", "Store xpl values in a DB");
 commander.option("--storeType <type>", "DB type");
+commander.option("--socketIO", "Enable Web Socket");
 
 Mysql.fillCommander(commander);
 Mongo.fillCommander(commander);
@@ -83,7 +84,7 @@ commander.command("rest").action(() => {
 		}
 
 		var f = (xpl) => {
-			var server = new Server(commander, store, xpl, memcache);
+			const server = new Server(commander, store, xpl, memcache);
 
 			server.listen((error, server) => {
 				if (error) {
@@ -97,7 +98,7 @@ commander.command("rest").action(() => {
 
 				process.on('exit', () => {
 					debug("xpl-db", "Clearing rest server URL ...");
-					
+
 					memcache.saveRestServerURL('', (error) => {
 						debug("xpl-db", "Reset rest server URL into memcache !");
 					});
