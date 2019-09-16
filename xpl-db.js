@@ -48,9 +48,9 @@ commander.command("create").action(() => {
 
 commander.command("rest").action(() => {
 
-	let Store = getStore(commander);
+	const Store = getStore(commander);
 
-	var deviceAliases = Xpl.loadDeviceAliases(commander.deviceAliases);
+	const deviceAliases = Xpl.loadDeviceAliases(commander.deviceAliases);
 	var initCbs = [];
 	var store;
 	var memcache;
@@ -84,7 +84,7 @@ commander.command("rest").action(() => {
 		}
 
 		var f = (xpl) => {
-			const server = new Server(commander, store, xpl, memcache);
+			const server = new Server(commander, store, xpl, memcache, deviceAliases);
 
 			server.listen((error, server) => {
 				if (error) {
