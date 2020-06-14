@@ -17,8 +17,8 @@
     "serve-static": "^1.11.1",
     "socket.io": "^2.2.0",
     "uuid": "^3.3.2",
-    "xpl-api": "^2.0.0",
-    "xpl-dbclient": "latest"
+    "xpl-api": "../xpl-api",
+    "xpl-dbclient": "../xpl-dbclient"
   },
   "keywords": [
     "XPL",

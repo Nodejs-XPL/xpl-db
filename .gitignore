@@ -28,3 +28,7 @@ node_modules
 /.tern-project
 /xpl-db.iml
 /xpl-mysql-logger.iml
+
+*.cmd
+
+yarn.lock
